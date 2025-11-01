@@ -1,2 +1,3 @@
 // Database Layer with Prisma
-export * from "./client";
+// TODO: Add database client here
+export {};
