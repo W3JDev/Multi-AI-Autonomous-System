@@ -13,15 +13,7 @@
     "noEmit": true,
     "incremental": true,
     "forceConsistentCasingInFileNames": true,
-    "allowJs": true,
-    "paths": {
-      "@repo/ui": ["./packages/shared-ui/src"],
-      "@repo/ai": ["./packages/ai-engine/src"],
-      "@repo/auth": ["./packages/auth/src"],
-      "@repo/db": ["./packages/database/src"],
-      "@repo/api": ["./packages/api-client/src"],
-      "@repo/utils": ["./packages/utils/src"]
-    }
+    "allowJs": true
   },
   "exclude": ["node_modules"]
 }
