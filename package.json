@@ -1,0 +1,23 @@
+{
+  "name": "@w3jdev/ai-ecosystem",
+  "version": "1.0.0",
+  "private": true,
+  "description": "W3JDev AI Ecosystem - Unified monorepo for 6 AI-powered applications",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean",
+    "setup": "bash scripts/setup-dev.sh"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@10.20.0"
+}

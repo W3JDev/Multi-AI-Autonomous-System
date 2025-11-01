@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "incremental": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
+    "paths": {
+      "@repo/ui": ["./packages/shared-ui/src"],
+      "@repo/ai": ["./packages/ai-engine/src"],
+      "@repo/auth": ["./packages/auth/src"],
+      "@repo/db": ["./packages/database/src"],
+      "@repo/api": ["./packages/api-client/src"],
+      "@repo/utils": ["./packages/utils/src"]
+    }
+  },
+  "exclude": ["node_modules"]
+}
