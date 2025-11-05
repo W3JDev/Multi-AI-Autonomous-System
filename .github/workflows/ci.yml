@@ -1,0 +1,80 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        app:
+          - punch-clock
+          - flair-ai
+          - waiter-ai
+          - guest-ai
+          - serene-ai
+          - ai-artisan
+          - unified-dashboard
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm build --filter=@ecosystem/${{ matrix.app }}
+
+      - name: Lint application
+        run: pnpm lint --filter=@ecosystem/${{ matrix.app }}
+
+      - name: Type check application
+        run: pnpm type-check --filter=@ecosystem/${{ matrix.app }}
+
+  packages:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint packages
+        run: pnpm lint --filter="./packages/*"
+
+      - name: Type check packages
+        run: pnpm type-check --filter="./packages/*"
