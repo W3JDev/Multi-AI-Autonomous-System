@@ -1,0 +1,16 @@
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  DataTable,
+  type TableProps,
+  type TableHeaderProps,
+  type TableBodyProps,
+  type TableRowProps,
+  type TableHeadProps,
+  type TableCellProps,
+  type DataTableProps,
+} from "./DataTable";
