@@ -1,0 +1,741 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum Plan {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MANAGER
+  MEMBER
+  VIEWER
+}
+
+enum OrganizationStatus {
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+}
+
+enum AttendanceMethod {
+  PIN
+  QR
+  FACE_ID
+  GPS
+  MANUAL
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+}
+
+enum ShiftType {
+  MORNING
+  AFTERNOON
+  NIGHT
+  FLEXIBLE
+}
+
+enum LeaveType {
+  SICK
+  CASUAL
+  ANNUAL
+  MATERNITY
+  PATERNITY
+  UNPAID
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  CLEANING
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  SERVED
+  COMPLETED
+  CANCELLED
+}
+
+enum DietaryType {
+  VEGETARIAN
+  VEGAN
+  GLUTEN_FREE
+  DAIRY_FREE
+  NUT_FREE
+  HALAL
+  KOSHER
+}
+
+enum TrainingDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum SkillLevel {
+  NOVICE
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum ApplicationStatus {
+  DRAFT
+  APPLIED
+  INTERVIEWING
+  OFFERED
+  REJECTED
+  ACCEPTED
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  ERROR
+  SUCCESS
+}
+
+enum ServiceCategory {
+  MASSAGE
+  FACIAL
+  BODY_TREATMENT
+  NAIL_CARE
+  HAIR_CARE
+  WELLNESS
+}
+
+// ============================================================================
+// CORE MULTI-TENANT MODELS
+// ============================================================================
+
+model Organization {
+  id        String             @id @default(uuid())
+  name      String
+  slug      String             @unique
+  plan      Plan               @default(FREE)
+  status    OrganizationStatus @default(ACTIVE)
+  settings  Json               @default("{}")
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+
+  // Relationships
+  users            User[]
+  subscriptions    Subscription[]
+  employees        Employee[]
+  restaurants      Restaurant[]
+  trainingPrograms TrainingProgram[]
+  staffMembers     StaffMember[]
+  resumes          Resume[]
+  spaServices      SpaService[]
+  notifications    Notification[]
+  auditLogs        AuditLog[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String     @id @default(uuid())
+  organizationId String     @map("organization_id")
+  email          String     @unique
+  name           String?
+  passwordHash   String?    @map("password_hash")
+  role           UserRole   @default(MEMBER)
+  status         UserStatus @default(ACTIVE)
+  settings       Json       @default("{}")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  // Relationships
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee        Employee?
+  staffMember     StaffMember?
+  resumes         Resume[]
+  jobApplications JobApplication[]
+  notifications   Notification[]
+  auditLogs       AuditLog[]
+
+  @@index([organizationId])
+  @@index([email])
+  @@index([status])
+  @@map("users")
+}
+
+model Subscription {
+  id               String   @id @default(uuid())
+  organizationId   String   @map("organization_id")
+  plan             Plan
+  status           String
+  currentPeriodEnd DateTime @map("current_period_end")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("subscriptions")
+}
+
+// ============================================================================
+// PUNCH-CLOCK MODELS
+// ============================================================================
+
+model Employee {
+  id             String         @id @default(uuid())
+  organizationId String         @map("organization_id")
+  userId         String?        @unique @map("user_id")
+  firstName      String         @map("first_name")
+  lastName       String         @map("last_name")
+  email          String
+  position       String
+  department     String?
+  employmentType EmploymentType @map("employment_type")
+  salary         Decimal?       @db.Decimal(12, 2)
+  status         UserStatus     @default(ACTIVE)
+  hireDate       DateTime?      @map("hire_date")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  // Relationships
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  attendances  Attendance[]
+  shifts       Shift[]
+  leaves       Leave[]
+  payrolls     Payroll[]
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([email])
+  @@index([status])
+  @@map("employees")
+}
+
+model Attendance {
+  id           String           @id @default(uuid())
+  employeeId   String           @map("employee_id")
+  checkInTime  DateTime         @map("check_in_time")
+  checkOutTime DateTime?        @map("check_out_time")
+  method       AttendanceMethod
+  location     String?
+  status       AttendanceStatus @default(PRESENT)
+  notes        String?
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  // Relationships
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([checkInTime])
+  @@index([status])
+  @@map("attendances")
+}
+
+model Shift {
+  id         String    @id @default(uuid())
+  employeeId String    @map("employee_id")
+  startTime  DateTime  @map("start_time")
+  endTime    DateTime  @map("end_time")
+  type       ShiftType
+  notes      String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  // Relationships
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([startTime])
+  @@map("shifts")
+}
+
+model Leave {
+  id         String      @id @default(uuid())
+  employeeId String      @map("employee_id")
+  type       LeaveType
+  startDate  DateTime    @map("start_date")
+  endDate    DateTime    @map("end_date")
+  status     LeaveStatus @default(PENDING)
+  reason     String?
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+
+  // Relationships
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([startDate])
+  @@map("leaves")
+}
+
+model Payroll {
+  id         String   @id @default(uuid())
+  employeeId String   @map("employee_id")
+  period     String
+  grossPay   Decimal  @map("gross_pay") @db.Decimal(12, 2)
+  netPay     Decimal  @map("net_pay") @db.Decimal(12, 2)
+  deductions Decimal  @db.Decimal(12, 2)
+  bonus      Decimal? @db.Decimal(12, 2)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([period])
+  @@map("payrolls")
+}
+
+// ============================================================================
+// RESTAURANT AI MODELS (WaiterAi + GuestAi)
+// ============================================================================
+
+model Restaurant {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  name           String
+  description    String?
+  address        String?
+  phone          String?
+  email          String?
+  settings       Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  menus        Menu[]
+  menuItems    MenuItem[]
+  tables       Table[]
+  orders       Order[]
+
+  @@index([organizationId])
+  @@map("restaurants")
+}
+
+model Menu {
+  id           String   @id @default(uuid())
+  restaurantId String   @map("restaurant_id")
+  name         String
+  description  String?
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  menuItems  MenuItem[]
+
+  @@index([restaurantId])
+  @@index([isActive])
+  @@map("menus")
+}
+
+model MenuItem {
+  id            String         @id @default(uuid())
+  restaurantId  String         @map("restaurant_id")
+  menuId        String?        @map("menu_id")
+  name          String
+  description   String?
+  aiDescription String?        @map("ai_description")
+  price         Decimal        @db.Decimal(10, 2)
+  category      String
+  dietary       DietaryType[]
+  allergens     String[]
+  translations  Json           @default("{}")
+  imageUrl      String?        @map("image_url")
+  isAvailable   Boolean        @default(true) @map("is_available")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  // Relationships
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  menu       Menu?       @relation(fields: [menuId], references: [id], onDelete: SetNull)
+  orderItems OrderItem[]
+
+  @@index([restaurantId])
+  @@index([menuId])
+  @@index([category])
+  @@index([isAvailable])
+  @@map("menu_items")
+}
+
+model Table {
+  id           String      @id @default(uuid())
+  restaurantId String      @map("restaurant_id")
+  number       String
+  capacity     Int
+  status       TableStatus @default(AVAILABLE)
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  // Relationships
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orders     Order[]
+
+  @@index([restaurantId])
+  @@index([status])
+  @@map("tables")
+}
+
+model Order {
+  id           String      @id @default(uuid())
+  restaurantId String      @map("restaurant_id")
+  tableId      String?     @map("table_id")
+  customerName String?     @map("customer_name")
+  total        Decimal     @db.Decimal(10, 2)
+  status       OrderStatus @default(PENDING)
+  notes        String?
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  // Relationships
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table      Table?      @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  items      OrderItem[]
+
+  @@index([restaurantId])
+  @@index([tableId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String   @id @default(uuid())
+  orderId        String   @map("order_id")
+  menuItemId     String   @map("menu_item_id")
+  quantity       Int
+  price          Decimal  @db.Decimal(10, 2)
+  customizations String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relationships
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([menuItemId])
+  @@map("order_items")
+}
+
+// ============================================================================
+// FLAIR AI MODELS (Training Platform)
+// ============================================================================
+
+model TrainingProgram {
+  id             String             @id @default(uuid())
+  organizationId String             @map("organization_id")
+  name           String
+  description    String?
+  language       String             @default("en")
+  scenarios      Json               @default("[]")
+  difficulty     TrainingDifficulty @default(BEGINNER)
+  duration       Int // in minutes
+  isActive       Boolean            @default(true) @map("is_active")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+
+  // Relationships
+  organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  trainingSessions TrainingSession[]
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@map("training_programs")
+}
+
+model StaffMember {
+  id             String     @id @default(uuid())
+  userId         String     @unique @map("user_id")
+  organizationId String     @map("organization_id")
+  firstName      String     @map("first_name")
+  lastName       String     @map("last_name")
+  role           String
+  language       String     @default("en")
+  skillLevel     SkillLevel @default(BEGINNER) @map("skill_level")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  // Relationships
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  trainingSessions TrainingSession[]
+  assessments      Assessment[]
+
+  @@index([userId])
+  @@index([organizationId])
+  @@map("staff_members")
+}
+
+model TrainingSession {
+  id         String    @id @default(uuid())
+  programId  String    @map("program_id")
+  staffId    String    @map("staff_id")
+  startTime  DateTime  @map("start_time")
+  endTime    DateTime? @map("end_time")
+  score      Int?
+  performance Json     @default("{}")
+  completed  Boolean   @default(false)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  // Relationships
+  program     TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  staff       StaffMember     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  assessments Assessment[]
+
+  @@index([programId])
+  @@index([staffId])
+  @@index([completed])
+  @@index([startTime])
+  @@map("training_sessions")
+}
+
+model Assessment {
+  id        String    @id @default(uuid())
+  sessionId String    @map("session_id")
+  staffId   String    @map("staff_id")
+  score     Int
+  feedback  String?
+  passedAt  DateTime? @map("passed_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  // Relationships
+  session TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  staff   StaffMember     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([staffId])
+  @@map("assessments")
+}
+
+// ============================================================================
+// AI-ARTISAN MODELS (Resume Builder)
+// ============================================================================
+
+model Resume {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  title          String
+  content        Json
+  rawText        String?  @map("raw_text")
+  aiOptimized    Boolean  @default(false) @map("ai_optimized")
+  atsScore       Int?     @map("ats_score")
+  targetJob      String?  @map("target_job")
+  keywords       String[]
+  template       String   @default("modern")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coverLetters    CoverLetter[]
+  jobApplications JobApplication[]
+
+  @@index([organizationId])
+  @@index([userId])
+  @@map("resumes")
+}
+
+model CoverLetter {
+  id             String   @id @default(uuid())
+  resumeId       String   @map("resume_id")
+  jobTitle       String   @map("job_title")
+  company        String
+  jobDescription String?  @map("job_description")
+  content        String
+  tone           String   @default("professional")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@map("cover_letters")
+}
+
+model JobApplication {
+  id         String            @id @default(uuid())
+  userId     String            @map("user_id")
+  resumeId   String            @map("resume_id")
+  company    String
+  position   String
+  status     ApplicationStatus @default(DRAFT)
+  appliedAt  DateTime?         @map("applied_at")
+  notes      String?
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @updatedAt @map("updated_at")
+
+  // Relationships
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([resumeId])
+  @@index([status])
+  @@map("job_applications")
+}
+
+// ============================================================================
+// SERENE-AI MODELS (Spa/Salon)
+// ============================================================================
+
+model SpaService {
+  id             String          @id @default(uuid())
+  organizationId String          @map("organization_id")
+  name           String
+  description    String?
+  duration       Int // in minutes
+  price          Decimal         @db.Decimal(10, 2)
+  category       ServiceCategory
+  isActive       Boolean         @default(true) @map("is_active")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  // Relationships
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  @@index([organizationId])
+  @@index([category])
+  @@index([isActive])
+  @@map("spa_services")
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  serviceId       String            @map("service_id")
+  customerName    String            @map("customer_name")
+  customerEmail   String            @map("customer_email")
+  customerPhone   String            @map("customer_phone")
+  appointmentDate DateTime          @map("appointment_date")
+  duration        Int // in minutes
+  status          AppointmentStatus @default(SCHEDULED)
+  notes           String?
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  // Relationships
+  service SpaService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId])
+  @@index([appointmentDate])
+  @@index([status])
+  @@map("appointments")
+}
+
+// ============================================================================
+// SHARED MODELS
+// ============================================================================
+
+model Notification {
+  id             String           @id @default(uuid())
+  organizationId String           @map("organization_id")
+  userId         String           @map("user_id")
+  title          String
+  message        String
+  type           NotificationType @default(INFO)
+  read           Boolean          @default(false)
+  link           String?
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  // Relationships
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  userId         String?  @map("user_id")
+  action         String
+  entity         String
+  entityId       String?  @map("entity_id")
+  changes        Json?
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relationships
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

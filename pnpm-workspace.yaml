@@ -1,6 +1,13 @@
 packages:
-  - "apps/*"
-  - "packages/*"
-  - "packages/config/tsconfig"
-  - "packages/config/eslint"
-  - "packages/config/prettier"
+  - apps/*
+  - packages/*
+  - packages/config/tsconfig
+  - packages/config/eslint
+  - packages/config/prettier
+
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - esbuild
+  - prisma
+  - sharp
