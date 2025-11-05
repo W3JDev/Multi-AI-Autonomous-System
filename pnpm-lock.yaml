@@ -384,7 +384,7 @@ importers:
         specifier: ^4.0.0
         version: 4.20.6
       typescript:
-        specifier: ^5.8.0
+        specifier: ^5.7.2
         version: 5.9.3
 
   packages/shared-ui:
