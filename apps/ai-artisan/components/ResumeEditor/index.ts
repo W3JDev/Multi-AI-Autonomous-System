@@ -1,0 +1,1 @@
+export { ResumeEditor } from './ResumeEditor';
