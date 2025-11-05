@@ -164,25 +164,31 @@ function generateModernTemplate(doc: jsPDF, resume: ResumeContent): Blob {
   return doc.output('blob');
 }
 
+// NOTE: Template variations below are placeholders for future implementation
+// Currently all use the modern template structure with planned variations:
+// - Classic: Traditional serif fonts, conservative layout
+// - Minimal: Clean lines, lots of whitespace
+// - Creative: Bold typography, accent colors
+// - Professional: Corporate-friendly, structured sections
+
 function generateClassicTemplate(doc: jsPDF, resume: ResumeContent): Blob {
-  // Classic template with traditional formatting
-  // Similar to modern but with more conservative styling
-  return generateModernTemplate(doc, resume); // Simplified for now
+  // TODO: Implement classic template with serif fonts and traditional layout
+  return generateModernTemplate(doc, resume);
 }
 
 function generateMinimalTemplate(doc: jsPDF, resume: ResumeContent): Blob {
-  // Minimal template with clean lines
-  return generateModernTemplate(doc, resume); // Simplified for now
+  // TODO: Implement minimal template with clean lines and whitespace
+  return generateModernTemplate(doc, resume);
 }
 
 function generateCreativeTemplate(doc: jsPDF, resume: ResumeContent): Blob {
-  // Creative template with color and design elements
-  return generateModernTemplate(doc, resume); // Simplified for now
+  // TODO: Implement creative template with bold design elements
+  return generateModernTemplate(doc, resume);
 }
 
 function generateProfessionalTemplate(doc: jsPDF, resume: ResumeContent): Blob {
-  // Professional template for corporate settings
-  return generateModernTemplate(doc, resume); // Simplified for now
+  // TODO: Implement professional template for corporate settings
+  return generateModernTemplate(doc, resume);
 }
 
 function addSection(doc: jsPDF, title: string, yPosition: number, leftMargin: number): number {

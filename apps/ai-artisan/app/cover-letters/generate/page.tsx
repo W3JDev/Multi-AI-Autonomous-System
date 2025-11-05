@@ -43,7 +43,15 @@ Sincerely,
 
   const handleCopy = () => {
     navigator.clipboard.writeText(generatedLetter);
-    alert('Cover letter copied to clipboard!');
+    // Show success feedback (could be improved with a toast notification)
+    const button = document.activeElement as HTMLButtonElement;
+    if (button) {
+      const originalText = button.textContent;
+      button.textContent = '✓ Copied!';
+      setTimeout(() => {
+        button.textContent = originalText;
+      }, 2000);
+    }
   };
 
   const handleDownload = () => {

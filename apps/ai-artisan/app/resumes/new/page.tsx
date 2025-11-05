@@ -40,7 +40,18 @@ export default function NewResume() {
   const handleSave = () => {
     // In a real app, this would save to the database via API
     localStorage.setItem('draft-resume', JSON.stringify(resumeData));
-    alert('Resume saved to local storage!');
+    
+    // Show success feedback
+    const saveBtn = document.querySelector('[data-save-btn]') as HTMLButtonElement;
+    if (saveBtn) {
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = '✓ Saved!';
+      saveBtn.disabled = true;
+      setTimeout(() => {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+      }, 2000);
+    }
   };
 
   return (
@@ -56,7 +67,7 @@ export default function NewResume() {
               <h1 className="text-2xl font-bold text-gray-900">Create New Resume</h1>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleSave}>
+              <Button variant="outline" onClick={handleSave} data-save-btn>
                 Save Draft
               </Button>
               <Button variant="outline" onClick={handleAnalyzeATS} disabled={isAnalyzing}>

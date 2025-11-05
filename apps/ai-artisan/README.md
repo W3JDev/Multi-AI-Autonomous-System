@@ -61,6 +61,9 @@ Ai-Artisan is a comprehensive AI-powered resume builder designed to help job see
 - **Database**: Prisma (via @repo/database)
 - **AI**: Google Gemini (via @repo/ai)
 - **Auth**: Supabase (via @repo/auth)
+- **UI Components**: Local components (temporary - planned migration to @repo/ui)
+
+> **Note**: Currently uses local UI components (`components/ui.tsx`) due to build configuration issues with @repo/ui package transpilation. Future enhancement will migrate to shared UI components for consistency across the monorepo.
 
 ## Getting Started
 

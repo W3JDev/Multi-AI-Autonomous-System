@@ -87,7 +87,8 @@ function extractKeywords(resume: ResumeContent): string[] {
       // Simple keyword extraction (in production, use NLP)
       const words = desc.split(/\s+/);
       words.forEach(word => {
-        if (word.length > 3 && /^[A-Za-z]+$/.test(word)) {
+        // Allow letters, numbers, hyphens, and dots for technical terms (e.g., React-18, Node.js)
+        if (word.length > 3 && /^[A-Za-z0-9.-]+$/.test(word)) {
           keywords.add(word);
         }
       });
