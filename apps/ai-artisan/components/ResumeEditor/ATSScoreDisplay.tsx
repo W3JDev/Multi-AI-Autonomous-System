@@ -1,6 +1,6 @@
 'use client';
 
-import type { ATSAnalysis } from '@/lib/types';
+import type { ATSAnalysis } from '@/utils/types';
 import { Card } from '@/components/ui';
 import { Progress } from '@/components/ui';
 

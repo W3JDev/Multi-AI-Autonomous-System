@@ -1,6 +1,6 @@
 'use client';
 
-import type { ResumeContent, ResumeTemplate } from '@/lib/types';
+import type { ResumeContent, ResumeTemplate } from '@/utils/types';
 
 interface ResumePreviewProps {
   data: ResumeContent;

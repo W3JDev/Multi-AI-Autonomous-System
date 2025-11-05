@@ -6,9 +6,9 @@ import { Button, Card } from '@/components/ui';
 import { ResumeEditor } from '@/components/ResumeEditor';
 import { ResumePreview } from '@/components/ResumeEditor/ResumePreview';
 import { ATSScoreDisplay } from '@/components/ResumeEditor/ATSScoreDisplay';
-import { emptyResume, type ResumeContent, type ATSAnalysis, RESUME_TEMPLATES } from '@/lib/types';
-import { analyzeATS } from '@/lib/ats-analyzer';
-import { generateResumePDF, downloadPDF } from '@/lib/pdf-generator';
+import { emptyResume, type ResumeContent, type ATSAnalysis, RESUME_TEMPLATES } from '@/utils/types';
+import { analyzeATS } from '@/utils/ats-analyzer';
+import { generateResumePDF, downloadPDF } from '@/utils/pdf-generator';
 
 export default function NewResume() {
   const [resumeData, setResumeData] = useState<ResumeContent>(emptyResume);
