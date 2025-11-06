@@ -1,7 +1,15 @@
 'use client';
 
-import { AppInfo } from '../../lib/types/dashboard';
+// import { AppInfo } from '../../lib/types/dashboard';
 
+// Define AppInfo type locally (copied or inferred from usage)
+interface AppInfo {
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+  enabled: boolean;
+}
 interface AppCardProps {
   app: AppInfo;
   onClick?: () => void;
