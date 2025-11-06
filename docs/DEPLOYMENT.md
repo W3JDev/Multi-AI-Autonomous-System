@@ -56,6 +56,8 @@ RAILWAY_TOKEN="your_railway_token"
 SLACK_WEBHOOK="https://hooks.slack.com/services/xxx"
 ```
 
+**Security Note:** The CI/CD workflow uses dynamic secret references (`secrets[format('VERCEL_PROJECT_ID_{0}', matrix.app)]`) to access project-specific secrets. This is a safe pattern that only accesses secrets matching the `VERCEL_PROJECT_ID_*` pattern, limiting exposure to only necessary secrets per deployment.
+
 ### 2. Database Setup
 
 ```bash

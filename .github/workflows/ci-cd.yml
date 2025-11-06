@@ -219,6 +219,9 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          # Dynamic secret reference for each app's project ID
+          # This is safe as it only accesses secrets matching the pattern VERCEL_PROJECT_ID_*
+          # Each app has its own project ID secret (e.g., VERCEL_PROJECT_ID_punch-clock)
           vercel-project-id: ${{ secrets[format('VERCEL_PROJECT_ID_{0}', matrix.app)] }}
           working-directory: apps/${{ matrix.app }}
           production: true
