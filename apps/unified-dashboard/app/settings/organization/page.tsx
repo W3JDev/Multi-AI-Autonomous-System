@@ -1,7 +1,6 @@
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label } from '@repo/ui';
-import { APPS } from '../../../lib/types/dashboard';
 
 export default function OrganizationSettingsPage() {
   return (
