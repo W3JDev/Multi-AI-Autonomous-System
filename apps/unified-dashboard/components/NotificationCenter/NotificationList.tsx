@@ -1,8 +1,18 @@
 'use client';
 
 import { NotificationItem } from './NotificationItem';
-import { NotificationItem as NotificationItemType } from '../../lib/types/dashboard';
 
+// Local type definition for NotificationItemType
+type NotificationItemType = {
+  id: string;
+  appId: string;
+  type: string;
+  title: string;
+  message: string;
+  read: boolean;
+  link: string;
+  createdAt: Date;
+};
 // Mock data - will be replaced with API calls
 const mockNotifications: NotificationItemType[] = [
   {
