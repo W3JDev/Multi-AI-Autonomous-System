@@ -59,7 +59,7 @@ Sincerely,
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `cover-letter-${company || 'template'}.txt`;
+    link.download = `cover-letter-${(company || 'template').replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
