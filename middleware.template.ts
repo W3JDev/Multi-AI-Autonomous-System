@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Rate limiting store (in production, use Redis)
+// Rate limiting store (in production, use Redis or Upstash)
+// WARNING: In-memory storage does NOT work correctly with multiple instances
+// For production with auto-scaling, use:
+// - Redis: https://redis.io
+// - Upstash: https://upstash.com/docs/redis/overall/ratelimit
+// - Vercel KV: https://vercel.com/docs/storage/vercel-kv
 const rateLimit = new Map<string, { count: number; resetTime: number }>();
 
 // Rate limit configuration
@@ -9,8 +14,28 @@ const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 60; // 60 requests per minute
 
 /**
- * Simple rate limiting implementation
- * In production, use Redis or a dedicated rate limiting service
+ * Simple rate limiting implementation for SINGLE INSTANCE deployments
+ * 
+ * PRODUCTION NOTE: This in-memory implementation will NOT work correctly
+ * with Railway's auto-scaling (2-10 replicas). Each instance maintains
+ * its own rate limit counter, allowing users to bypass limits by hitting
+ * different instances.
+ * 
+ * For multi-instance deployments, implement Redis-based rate limiting:
+ * @see https://github.com/upstash/ratelimit
+ * 
+ * Example with Upstash:
+ * ```typescript
+ * import { Ratelimit } from '@upstash/ratelimit';
+ * import { Redis } from '@upstash/redis';
+ * 
+ * const ratelimit = new Ratelimit({
+ *   redis: Redis.fromEnv(),
+ *   limiter: Ratelimit.slidingWindow(60, '1 m'),
+ * });
+ * 
+ * const { success } = await ratelimit.limit(ip);
+ * ```
  */
 function checkRateLimit(identifier: string): { success: boolean; limit: number; remaining: number; reset: number } {
   const now = Date.now();

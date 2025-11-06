@@ -92,7 +92,10 @@ export class AutoRecovery {
     if (checks.database.status === 'error') {
       console.log('Attempting database reconnection...');
       try {
+        // Note: Import database at module level in production
+        // This is a fallback recovery mechanism
         const { db } = await import('@repo/database');
+        await db.$disconnect();
         await db.$connect();
         console.log('✅ Database reconnected');
         await this.notify('✅ Database reconnected successfully');

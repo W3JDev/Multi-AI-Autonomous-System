@@ -257,6 +257,43 @@ api.w3jdev.com           CNAME  [your-railway-domain]
 status.w3jdev.com        CNAME  [betterstack-domain]
 ```
 
+### Rate Limiting (Production)
+
+**Important:** The middleware template uses in-memory rate limiting which **does not work** with Railway's auto-scaling (multiple instances).
+
+For production with auto-scaling, implement Redis-based rate limiting:
+
+1. **Add Upstash Redis** (Free tier available)
+   ```bash
+   # Install dependencies
+   pnpm add @upstash/ratelimit @upstash/redis
+   ```
+
+2. **Update middleware.ts**
+   ```typescript
+   import { Ratelimit } from '@upstash/ratelimit';
+   import { Redis } from '@upstash/redis';
+   
+   const ratelimit = new Ratelimit({
+     redis: Redis.fromEnv(),
+     limiter: Ratelimit.slidingWindow(60, '1 m'),
+   });
+   
+   // In middleware
+   const { success } = await ratelimit.limit(ip);
+   ```
+
+3. **Add environment variables**
+   ```env
+   UPSTASH_REDIS_REST_URL="your_url"
+   UPSTASH_REDIS_REST_TOKEN="your_token"
+   ```
+
+Alternative solutions:
+- **Vercel KV**: Built-in Redis for Vercel apps
+- **Redis Cloud**: Managed Redis service
+- **Cloudflare Workers KV**: Edge storage
+
 ### SSL Certificates
 
 - Vercel: Auto-managed (Let's Encrypt)
