@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import type { ResumeContent, WorkExperience, Education } from '@/utils/types';
 import { Button } from '@/components/ui';
 import { Input } from '@/components/ui';
