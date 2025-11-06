@@ -1,7 +1,7 @@
 'use client';
 
 import { StatsCard } from '@repo/ui';
-import { Activity, TrendingUp, DollarSign, Zap } from 'lucide-react';
+import { Activity, DollarSign, Zap } from 'lucide-react';
 
 export function MetricsOverview() {
   return (
