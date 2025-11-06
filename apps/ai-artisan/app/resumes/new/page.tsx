@@ -33,7 +33,8 @@ export default function NewResume() {
 
   const handleExportPDF = () => {
     const pdfBlob = generateResumePDF(resumeData, selectedTemplate);
-    const filename = `${resumeData.personalInfo.name || 'resume'}_${Date.now()}.pdf`;
+    const safeName = (resumeData.personalInfo.name || 'resume').replace(/[^a-zA-Z0-9]/g, '_');
+    const filename = `${safeName}_${Date.now()}.pdf`;
     downloadPDF(pdfBlob, filename);
   };
 
