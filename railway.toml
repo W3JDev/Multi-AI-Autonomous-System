@@ -1,0 +1,23 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "pnpm install --frozen-lockfile && pnpm build --filter=@repo/api-gateway"
+
+[deploy]
+startCommand = "pnpm start --filter=@repo/api-gateway"
+healthcheckPath = "/health"
+healthcheckTimeout = 100
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# Auto-scaling Configuration
+[deploy.autoscaling]
+enabled = true
+minReplicas = 2
+maxReplicas = 10
+targetCPU = 80
+targetMemory = 80
+
+# Resource Limits
+[deploy.resources]
+memoryMB = 512
+cpuCores = 1
