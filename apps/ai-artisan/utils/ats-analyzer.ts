@@ -106,12 +106,13 @@ function extractKeywords(resume: ResumeContent): string[] {
 function extractKeywordsFromText(text: string): string[] {
   // Simple extraction - in production, use NLP for better results
   const commonWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for']);
-  const words = text.toLowerCase().split(/\s+/);
+  const words = text.split(/\s+/);
   const keywords = new Set<string>();
   
   words.forEach(word => {
-    const cleaned = word.replace(/[^a-z]/g, '');
-    if (cleaned.length > 3 && !commonWords.has(cleaned)) {
+    // Allow letters, numbers, hyphens, and dots for technical terms (e.g., react-18, node.js, c++)
+    const cleaned = word.toLowerCase().replace(/[^a-z0-9.-]/g, '');
+    if (cleaned.length > 3 && /^[a-z0-9.-]+$/.test(cleaned) && !commonWords.has(cleaned)) {
       keywords.add(cleaned);
     }
   });
