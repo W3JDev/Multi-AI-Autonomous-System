@@ -1,8 +1,14 @@
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@repo/ui';
-import { APPS } from '../../lib/types/dashboard';
 
+
+// Mock APPS data - in production, this would come from API or a types file
+const APPS = [
+  { name: 'App One' },
+  { name: 'App Two' },
+  { name: 'App Three' },
+];
 export function ChartDashboard() {
   // Mock data - in production, this would come from API
   const appUsageData = APPS.map(app => ({
