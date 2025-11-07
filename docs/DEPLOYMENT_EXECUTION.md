@@ -1,6 +1,6 @@
 # 🚀 Deployment Execution Guide
 
-This guide provides step-by-step instructions to deploy all 6 applications to production.
+This guide provides step-by-step instructions to deploy all 7 applications to production (6 main applications + unified dashboard).
 
 ## ⚡ Quick Start (For Experienced Users)
 

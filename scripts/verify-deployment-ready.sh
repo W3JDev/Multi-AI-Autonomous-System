@@ -149,7 +149,7 @@ else
     print_error "Health check path not configured"
 fi
 
-if grep -q "enabled = true" railway.toml | grep -q "autoscaling"; then
+if grep -E "autoscaling|enabled.*true" railway.toml > /dev/null; then
     print_success "Auto-scaling enabled"
 else
     print_warning "Auto-scaling may not be configured"
