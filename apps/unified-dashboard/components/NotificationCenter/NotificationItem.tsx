@@ -1,16 +1,8 @@
 'use client';
 
 import { formatDistanceToNow } from 'date-fns';
-import { NotificationItem as NotificationItemType } from '../../lib/types/dashboard';
+import { NotificationItem as NotificationItemType, APPS } from '../../lib/types/dashboard';
 
-
-// Local definition of APPS to avoid missing import error
-const APPS = [
-  // Example app objects; replace with actual app data as needed
-  { id: 'app1', icon: '📱' },
-  { id: 'app2', icon: '💻' },
-  // Add more apps as required
-];
 interface NotificationItemProps {
   notification: NotificationItemType;
 }
