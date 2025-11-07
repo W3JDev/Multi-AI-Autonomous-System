@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Dialog } from '@repo/ui';
 import { Search, Command as CommandIcon } from 'lucide-react';
-// import { APPS } from '../../lib/types/dashboard';
+import { APPS } from '../../lib/types/dashboard';
 import { AppCard } from './AppCard';
 
 export function AppSwitcher() {
