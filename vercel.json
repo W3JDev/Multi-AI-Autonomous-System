@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": null,
+  "env": {
+    "DATABASE_URL": "@database-url",
+    "DIRECT_DATABASE_URL": "@direct-database-url",
+    "GEMINI_API_KEY": "@gemini-api-key",
+    "DEEPSEEK_API_KEY": "@deepseek-api-key",
+    "SUPABASE_URL": "@supabase-url",
+    "SUPABASE_ANON_KEY": "@supabase-anon-key",
+    "NEXTAUTH_URL": "@nextauth-url",
+    "NEXTAUTH_SECRET": "@nextauth-secret",
+    "SENTRY_DSN": "@sentry-dsn",
+    "API_GATEWAY_URL": "@api-gateway-url"
+  }
+}

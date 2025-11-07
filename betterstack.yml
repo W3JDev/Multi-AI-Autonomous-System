@@ -1,0 +1,142 @@
+# Better Stack (Uptime Monitoring) Configuration
+# Visit: https://betterstack.com/uptime
+
+monitors:
+  # Frontend Applications
+  - name: "Unified Dashboard"
+    url: "https://dashboard.w3jdev.com"
+    interval: 60 # seconds
+    expected_status_codes: [200]
+    timeout: 10
+    
+  - name: "PUNCH-CLOCK"
+    url: "https://punch-clock.w3jdev.com"
+    interval: 60
+    expected_status_codes: [200]
+    timeout: 10
+    
+  - name: "Restaurant AI (WaiterAi)"
+    url: "https://restaurant-ai.w3jdev.com"
+    interval: 60
+    expected_status_codes: [200]
+    timeout: 10
+    
+  - name: "FlairAi"
+    url: "https://flair-ai.w3jdev.com"
+    interval: 60
+    expected_status_codes: [200]
+    timeout: 10
+    
+  - name: "Ai-Artisan"
+    url: "https://ai-artisan.w3jdev.com"
+    interval: 60
+    expected_status_codes: [200]
+    timeout: 10
+    
+  - name: "Serene-AI"
+    url: "https://serene-ai.w3jdev.com"
+    interval: 60
+    expected_status_codes: [200]
+    timeout: 10
+
+  # Backend Services
+  - name: "API Gateway - Health Check"
+    url: "https://api.w3jdev.com/health"
+    interval: 30
+    expected_status_codes: [200]
+    timeout: 5
+    expected_body: "healthy"
+    
+  - name: "API Gateway - tRPC"
+    url: "https://api.w3jdev.com/trpc"
+    interval: 60
+    expected_status_codes: [200, 404]
+    timeout: 10
+
+  # Database Monitoring (if exposed)
+  # - name: "Database"
+  #   type: "postgres"
+  #   connection_string: "${DATABASE_URL}"
+  #   interval: 120
+  #   query: "SELECT 1"
+
+# Alert Configuration
+alerts:
+  # Email alerts
+  - type: "email"
+    to: "alerts@w3jdev.com"
+    on_failure: true
+    on_recovery: true
+    
+  # Slack alerts (if webhook configured)
+  - type: "slack"
+    webhook: "${SLACK_WEBHOOK}"
+    on_failure: true
+    on_recovery: true
+    
+  # SMS alerts (optional, requires Better Stack paid plan)
+  # - type: "sms"
+  #   phone: "+1234567890"
+  #   on_failure: true
+
+# Escalation Policy
+escalation:
+  # Escalate after 3 consecutive failures
+  threshold: 3
+  
+  # Re-check interval during incident
+  recheck_interval: 15 # seconds
+  
+  # Auto-resolve after successful checks
+  auto_resolve_after: 2 # successful checks
+
+# Status Page Configuration
+status_page:
+  enabled: true
+  domain: "status.w3jdev.com"
+  title: "W3JDev AI Ecosystem Status"
+  components:
+    - name: "Frontend Applications"
+      monitors:
+        - "Unified Dashboard"
+        - "PUNCH-CLOCK"
+        - "Restaurant AI (WaiterAi)"
+        - "FlairAi"
+        - "Ai-Artisan"
+        - "Serene-AI"
+    
+    - name: "API Services"
+      monitors:
+        - "API Gateway - Health Check"
+        - "API Gateway - tRPC"
+    
+  # Incident history
+  show_history: true
+  history_days: 90
+  
+  # Uptime metrics
+  show_uptime: true
+  uptime_period: 90 # days
+
+# Maintenance Windows
+# maintenance_windows:
+#   - name: "Scheduled Maintenance"
+#     start: "2025-01-01T00:00:00Z"
+#     end: "2025-01-01T02:00:00Z"
+#     affected_monitors:
+#       - "API Gateway - Health Check"
+#     notify: true
+
+# Notification Integrations
+integrations:
+  # PagerDuty (optional)
+  # - type: "pagerduty"
+  #   integration_key: "${PAGERDUTY_KEY}"
+  
+  # Discord (optional)
+  # - type: "discord"
+  #   webhook: "${DISCORD_WEBHOOK}"
+  
+  # Microsoft Teams (optional)
+  # - type: "teams"
+  #   webhook: "${TEAMS_WEBHOOK}"

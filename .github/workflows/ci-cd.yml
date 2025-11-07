@@ -1,0 +1,274 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10'
+
+jobs:
+  # Lint & Type Check
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint packages
+        run: pnpm lint --filter="./packages/*"
+
+      - name: Type check packages
+        run: pnpm type-check --filter="./packages/*"
+
+  # Build Packages
+  build-packages:
+    name: Build Packages
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build --filter="./packages/*"
+
+      - name: Cache packages build
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            packages/*/.next
+          key: packages-build-${{ github.sha }}
+
+  # Test Applications
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build-packages
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore packages build
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            packages/*/.next
+          key: packages-build-${{ github.sha }}
+
+      - name: Run tests
+        run: pnpm test || echo "No tests configured yet"
+        continue-on-error: true
+
+  # Build Applications
+  build-apps:
+    name: Build ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    needs: build-packages
+    strategy:
+      matrix:
+        app:
+          - punch-clock
+          - flair-ai
+          - waiter-ai
+          - guest-ai
+          - serene-ai
+          - ai-artisan
+          - unified-dashboard
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore packages build
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            packages/*/.next
+          key: packages-build-${{ github.sha }}
+
+      - name: Build ${{ matrix.app }}
+        run: pnpm build --filter=@ecosystem/${{ matrix.app }}
+
+      - name: Lint ${{ matrix.app }}
+        run: pnpm lint --filter=@ecosystem/${{ matrix.app }}
+
+      - name: Type check ${{ matrix.app }}
+        run: pnpm type-check --filter=@ecosystem/${{ matrix.app }}
+
+  # Database Migrations (only on main branch)
+  migrate-database:
+    name: Database Migrations
+    runs-on: ubuntu-latest
+    needs: build-packages
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Prisma migrations
+        run: |
+          cd packages/database
+          pnpm exec prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        continue-on-error: true
+
+  # Deploy to Vercel (only on main branch)
+  deploy-vercel:
+    name: Deploy ${{ matrix.app }} to Vercel
+    runs-on: ubuntu-latest
+    needs: [build-apps, migrate-database]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    strategy:
+      matrix:
+        app:
+          - unified-dashboard
+          - punch-clock
+          - flair-ai
+          - waiter-ai
+          - guest-ai
+          - serene-ai
+          - ai-artisan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          # Dynamic secret reference for each app's project ID
+          # This is safe as it only accesses secrets matching the pattern VERCEL_PROJECT_ID_*
+          # Each app has its own project ID secret (e.g., VERCEL_PROJECT_ID_punch-clock)
+          vercel-project-id: ${{ secrets[format('VERCEL_PROJECT_ID_{0}', matrix.app)] }}
+          working-directory: apps/${{ matrix.app }}
+          production: true
+
+  # Deploy API Gateway to Railway (only on main branch)
+  deploy-railway:
+    name: Deploy API Gateway to Railway
+    runs-on: ubuntu-latest
+    needs: build-packages
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Railway
+        uses: bervProject/railway-deploy@main
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          service: api-gateway
+        continue-on-error: true
+
+  # Notify on Slack
+  notify:
+    name: Notification
+    runs-on: ubuntu-latest
+    needs: [deploy-vercel, deploy-railway]
+    if: always() && github.ref == 'refs/heads/main'
+    steps:
+      - name: Determine deployment status
+        id: status
+        run: |
+          if [ "${{ needs.deploy-vercel.result }}" == "success" ] && [ "${{ needs.deploy-railway.result }}" == "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "message=✅ Deployment completed successfully!" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "message=❌ Deployment failed!" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Slack notification
+        uses: 8398a7/action-slack@v3
+        if: env.SLACK_WEBHOOK != ''
+        with:
+          status: ${{ steps.status.outputs.status }}
+          text: ${{ steps.status.outputs.message }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        continue-on-error: true

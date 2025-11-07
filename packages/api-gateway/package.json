@@ -1,0 +1,35 @@
+{
+  "name": "@repo/api-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Unified API Gateway for W3JDev AI Ecosystem",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "start": "node dist/index.js",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "@trpc/server": "^11.0.0",
+    "ws": "^8.18.0",
+    "@repo/api": "workspace:*",
+    "@repo/database": "workspace:*",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@repo/tsconfig": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@types/express": "^5.0.0",
+    "@types/cors": "^2.8.17",
+    "@types/ws": "^8.5.13",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  }
+}
