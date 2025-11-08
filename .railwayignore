@@ -1,0 +1,56 @@
+# Railway Ignore File
+# This file prevents Railway from auto-detecting frontend applications
+# Only the API Gateway (packages/api-gateway) should be detected and deployed
+
+# Ignore all frontend applications
+apps/unified-dashboard/
+apps/punch-clock/
+apps/flair-ai/
+apps/waiter-ai/
+apps/guest-ai/
+apps/serene-ai/
+apps/ai-artisan/
+
+# Ignore all app-specific configurations
+apps/*/vercel.json
+apps/*/.vercel/
+apps/*/next.config.js
+apps/*/.next/
+
+# Ignore shared packages except api-gateway
+packages/ui/
+packages/ai/
+packages/auth/
+packages/database/
+packages/api/
+packages/monitoring/
+packages/utils/
+
+# Ignore documentation and configuration files
+docs/
+.github/
+.vscode/
+*.md
+!railway.toml
+
+# Ignore development and build artifacts
+node_modules/
+.turbo/
+dist/
+.next/
+*.log
+.env*
+!.env.template
+
+# Ignore test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+__tests__/
+__mocks__/
+
+# Ignore CI/CD configs not needed for Railway
+.github/workflows/
+betterstack.yml
+vercel.json

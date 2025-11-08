@@ -1,13 +1,31 @@
+# Railway Configuration for API Gateway Only
+# This file explicitly targets the API Gateway service for deployment
+# All frontend apps are deployed separately to Vercel
+
 [build]
 builder = "NIXPACKS"
+# Build only the API Gateway and its dependencies
 buildCommand = "pnpm install --frozen-lockfile && pnpm build --filter=@repo/api-gateway"
+# Explicitly set working directory to prevent auto-detection of frontend apps
+watchPatterns = ["packages/api-gateway/**", "packages/api/**", "packages/database/**"]
 
 [deploy]
-startCommand = "pnpm start --filter=@repo/api-gateway"
+# Explicit service name for Railway
+serviceName = "api-gateway"
+startCommand = "cd packages/api-gateway && node dist/index.js"
 healthcheckPath = "/health"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
+
+# Environment Configuration
+[deploy.env]
+NODE_ENV = "production"
+PORT = "3000"
+# Additional env vars should be set in Railway dashboard:
+# - DATABASE_URL
+# - GEMINI_API_KEY
+# - DEEPSEEK_API_KEY (optional)
 
 # Auto-scaling Configuration
 [deploy.autoscaling]
@@ -17,7 +35,19 @@ maxReplicas = 10
 targetCPU = 80
 targetMemory = 80
 
-# Resource Limits
+# Resource Limits (Railway Hobby Plan)
 [deploy.resources]
 memoryMB = 512
 cpuCores = 1
+
+# Health Check Configuration
+[deploy.healthcheck]
+path = "/health"
+timeout = 100
+interval = 30
+retries = 3
+
+# Networking
+[deploy.network]
+# Enable WebSocket support
+allowWebsockets = true

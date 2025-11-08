@@ -158,7 +158,48 @@ NEXTAUTH_SECRET="your_secret"
 
 ## 🚢 Deployment
 
-This monorepo is optimized for deployment on Vercel. Each app can be deployed independently.
+### Automated Deployment Solution
+
+This project includes a comprehensive automated deployment solution that handles:
+- ✅ **API Gateway** deployment to Railway (auto-scaling 2-10 replicas)
+- ✅ **7 Frontend Apps** deployment to Vercel
+- ✅ **Environment Variables** synchronization across platforms
+- ✅ **End-to-end verification** of all services
+
+#### Quick Deployment
+
+```bash
+# One-command deployment (recommended)
+./scripts/deploy-all.sh
+
+# Or deploy step-by-step
+./scripts/validate-railway-config.sh     # Validate configuration
+./scripts/railway-deploy.sh              # Deploy API Gateway
+./scripts/update-vercel-envs.sh <URL>    # Update Vercel apps
+./scripts/verify-deployment.sh <URL>     # Verify deployment
+```
+
+#### Platform Configuration
+
+**Railway (API Gateway)**
+- Plan: Hobby ($5/month)
+- Auto-scaling: 2-10 replicas
+- Health checks: `/health` endpoint
+- Build: Automatic via `railway.toml`
+
+**Vercel (Frontend Apps)**
+- Plan: Free tier
+- Apps: All 7 applications
+- Automatic SSL/TLS
+- Preview deployments on PRs
+
+#### Documentation
+
+- 📘 [Automated Deployment Guide](./docs/AUTOMATED_DEPLOYMENT_GUIDE.md) - Complete deployment instructions
+- 📊 [Deployment Status](./DEPLOYMENT_STATUS.md) - Current deployment status
+- ✅ [Deployment Checklist](./DEPLOYMENT_CHECKLIST.md) - Step-by-step checklist
+
+### Manual Deployment
 
 ```bash
 # Deploy specific app to Vercel
